@@ -7,15 +7,17 @@ import math
 from abc import ABC
 from typing import Dict, List, Union
 
-from sklearn.base import RegressorMixin
-from skopt.space import Categorical, Dimension, Integer
-
 from freqtrade.constants import Config
 from freqtrade.exchange import timeframe_to_minutes
 from freqtrade.misc import round_dict
 from freqtrade.optimize.space import SKDecimal
 from freqtrade.strategy import IStrategy
 
+from sklearnex import patch_sklearn
+patch_sklearn()
+
+from sklearn.base import RegressorMixin
+from skopt.space import Categorical, Dimension, Integer
 
 logger = logging.getLogger(__name__)
 
