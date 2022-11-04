@@ -80,7 +80,7 @@
             "random_state": 1
         },
         "model_training_parameters": {
-            "n_estimators": 1000
+            "n_estimators": 10
         }
     },
     "bot_name": "",

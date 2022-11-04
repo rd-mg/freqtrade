@@ -12,8 +12,7 @@ from freqtrade.strategy import IntParameter, IStrategy, merge_informative_pair
 logger = logging.getLogger(__name__)
 
 
-
-class FreqaiExampleHybridStrategy(IStrategy):
+class FreqaiExampleHybridStrategyOnlyAI(IStrategy):
     """
     Example of a hybrid FreqAI strat, designed to illustrate how a user may employ
     FreqAI to bolster a typical Freqtrade strategy.
@@ -194,26 +193,12 @@ class FreqaiExampleHybridStrategy(IStrategy):
 
         df.loc[
             (
-                # Signal: RSI crosses above 30
-                (qtpylib.crossed_above(df['rsi'], self.buy_rsi.value)) &
-                (df['tema'] <= df['bb_middleband']) &  # Guard: tema below BB middle
-                (df['tema'] > df['tema'].shift(1)) &  # Guard: tema is raising
-                (df['volume'] > 0) &  # Make sure Volume is not 0
-                (df['do_predict'] == 1) &  # Make sure Freqai is confident in the prediction
-                # Only enter trade if Freqai thinks the trend is in this direction
                 (df['&s-up_or_down'] == 'up')
             ),
             'enter_long'] = 1
 
         df.loc[
             (
-                # Signal: RSI crosses above 70
-                (qtpylib.crossed_above(df['rsi'], self.short_rsi.value)) &
-                (df['tema'] > df['bb_middleband']) &  # Guard: tema above BB middle
-                (df['tema'] < df['tema'].shift(1)) &  # Guard: tema is falling
-                (df['volume'] > 0) &  # Make sure Volume is not 0
-                (df['do_predict'] == 1) &  # Make sure Freqai is confident in the prediction
-                # Only enter trade if Freqai thinks the trend is in this direction
                 (df['&s-up_or_down'] == 'down')
             ),
             'enter_short'] = 1
@@ -224,23 +209,14 @@ class FreqaiExampleHybridStrategy(IStrategy):
 
         df.loc[
             (
-                # Signal: RSI crosses above 70
-                (qtpylib.crossed_above(df['rsi'], self.sell_rsi.value)) &
-                (df['tema'] > df['bb_middleband']) &  # Guard: tema above BB middle
-                (df['tema'] < df['tema'].shift(1)) &  # Guard: tema is falling
-                (df['volume'] > 0)  # Make sure Volume is not 0
+                (df['&s-up_or_down'] == 'down')
             ),
 
             'exit_long'] = 1
 
         df.loc[
             (
-                # Signal: RSI crosses above 30
-                (qtpylib.crossed_above(df['rsi'], self.exit_short_rsi.value)) &
-                # Guard: tema below BB middle
-                (df['tema'] <= df['bb_middleband']) &
-                (df['tema'] > df['tema'].shift(1)) &  # Guard: tema is raising
-                (df['volume'] > 0)  # Make sure Volume is not 0
+                (df['&s-up_or_down'] == 'up')
             ),
             'exit_short'] = 1
 

@@ -1,4 +1,5 @@
 import logging
+import math
 
 import numpy as np
 import pandas as pd
@@ -8,12 +9,24 @@ from technical import qtpylib
 
 from freqtrade.strategy import IntParameter, IStrategy, merge_informative_pair
 
+from technical.indicators import RMI, laguerre, madrid_sqz, TKE, vwmacd, MADR
+
+
 
 logger = logging.getLogger(__name__)
 
 
+def slope(y1, y2):
+    x1 = 1.0
+    x2 = 2.0
+    x = x2 - x1
+    y = y2 - y1
 
-class FreqaiExampleHybridStrategy(IStrategy):
+    angle = math.atan2(y, x) * (180.0 / math.pi)
+    return (angle)
+
+
+class FreqaiExampleHybridStrategySpotOnlyAI(IStrategy):
     """
     Example of a hybrid FreqAI strat, designed to illustrate how a user may employ
     FreqAI to bolster a typical Freqtrade strategy.
@@ -71,12 +84,8 @@ class FreqaiExampleHybridStrategy(IStrategy):
             'tema': {},
         },
         'subplots': {
-            "MACD": {
-                'macd': {'color': 'blue'},
-                'macdsignal': {'color': 'orange'},
-            },
-            "RSI": {
-                'rsi': {'color': 'red'},
+            "do_predict": {
+                'do_predict': {'color': 'red'},
             },
             "Up_or_down": {
                 '&s-up_or_down': {'color': 'green'},
@@ -85,10 +94,9 @@ class FreqaiExampleHybridStrategy(IStrategy):
     }
 
     process_only_new_candles = True
-    stoploss = -0.05
+    stoploss = -0.015
     use_exit_signal = True
     startup_candle_count: int = 300
-    can_short = True
 
     # Hyperoptable parameters
     buy_rsi = IntParameter(low=1, high=50, default=30, space='buy', optimize=True, load=True)
@@ -121,14 +129,56 @@ class FreqaiExampleHybridStrategy(IStrategy):
 
             t = int(t)
             informative[f"%-{coin}rsi-period_{t}"] = ta.RSI(informative, timeperiod=t)
-            informative[f"%-{coin}mfi-period_{t}"] = ta.MFI(informative, timeperiod=t)
-            informative[f"%-{coin}adx-period_{t}"] = ta.ADX(informative, timeperiod=t)
-            informative[f"%-{coin}sma-period_{t}"] = ta.SMA(informative, timeperiod=t)
-            informative[f"%-{coin}ema-period_{t}"] = ta.EMA(informative, timeperiod=t)
-            informative[f"%-{coin}roc-period_{t}"] = ta.ROC(informative, timeperiod=t)
-            informative[f"%-{coin}relative_volume-period_{t}"] = (
-                informative["volume"] / informative["volume"].rolling(t).mean()
+            # macd = ta.MACD(informative, timeperiod=t)
+            # informative[f"%-{coin}macd-period_{t}"] = macd['macd']
+           
+            # informative[f"%-{coin}adx-period_{t}"] = ta.ADX(informative, timeperiod=t)
+            # informative[f"%-{coin}sma-period_{t}"] = ta.SMA(informative, timeperiod=t)
+            # informative[f"%-{coin}ema-period_{t}"] = ta.EMA(informative, timeperiod=t)
+            # informative[f"%-{coin}roc-period_{t}"] = ta.ROC(informative, timeperiod=t)
+            # informative[f"%-{coin}relative_volume-period_{t}"] = (
+            #     informative["volume"] / informative["volume"].rolling(t).mean()
+            # )
+            
+            StochRSI = ta.STOCHRSI(informative, timeperiod=t)
+            informative[f"%-{coin}-stochrsi_fastk_{t}"] = StochRSI["fastk"]
+            # informative[f"%-{coin}-stochrsi_fastd_{t}"] = StochRSI["fastd"]
+            # informative[f"%-{coin}-stochrsi_fastk-fastd_{t}"] = StochRSI["fastk"] - StochRSI["fastd"]
+                
+            # MADRID_SQZ = madrid_sqz(informative)
+            # informative[f"%-{coin}-madrid_sqz_{t}"] = MADRID_SQZ[1]
+            # informative[f"%-{coin}-laguerre_{t}"] = laguerre(informative, gamma=0.2, smooth=1)
+
+            tke = TKE(informative)
+            informative[f"%-{coin}-TKE_{t}"] = tke[0]
+
+            # madr = MADR(informative)
+            # informative[f"%-{coin}-madr_stdcenter{t}"] = madr['stdcenter']
+            # informative[f"%-{coin}-madr_plusdev{t}"] = madr['plusdev']
+            # informative[f"%-{coin}-madr_minusdev{t}"] = madr['minusdev']
+            # informative[f"%-{coin}-madr_rate{t}"] = madr['rate']
+            # informative[f"%-{coin}-madr_slope_rate{t}"] = (madr['rate'] - madr['rate'].shift(1))
+                        
+            bollinger = qtpylib.bollinger_bands(qtpylib.typical_price(informative), window=20, stds=2)
+            informative[f"%-{coin}-bb_lowerband"] = bollinger['lower']
+            # informative[f"%-{coin}-bb_middleband"] = bollinger['mid']
+            informative[f"%-{coin}-bb_upperband"] = bollinger['upper']
+            informative[f"%-{coin}-bb_percent"] = (
+                (informative["close"] - bollinger['lower']) / (bollinger['upper'] - bollinger['lower'])
             )
+            informative[f"%-{coin}-bb_width"]=(
+                (bollinger["upper"] - bollinger["lower"]) / bollinger["mid"]
+            )
+            # informative[f"%-{coin}-bb_slope_middleband"]=(
+            #     (bollinger["mid"]- bollinger["mid"].shift(1))
+            # )
+
+            # TEMA - Triple Exponential Moving Average
+            informative[f"%-{coin}-tema_{t}"] = ta.TEMA(informative, timeperiod=t)
+
+        # informative[f"%-{coin}pct-change"] = informative["close"].pct_change()
+        # informative[f"%-{coin}raw_volume"] = informative["volume"]
+        # informative[f"%-{coin}raw_price"] = informative["close"]
 
         # FreqAI needs the following lines in order to detect features and automatically
         # expand upon them.
@@ -153,7 +203,7 @@ class FreqaiExampleHybridStrategy(IStrategy):
             # User "looks into the future" here to figure out if the future
             # will be "up" or "down". This same column name is available to
             # the user
-            df['&s-up_or_down'] = np.where(df["close"].shift(-50) >
+            df['&s-up_or_down'] = np.where(df["close"].shift(-8) >
                                            df["close"], 'up', 'down')
 
         return df
@@ -165,58 +215,21 @@ class FreqaiExampleHybridStrategy(IStrategy):
         # based strategy.
 
         dataframe = self.freqai.start(dataframe, metadata, self)
+        dataframe["tema"] = ta.TEMA(dataframe)        
+        dataframe["laguerre"] = laguerre(dataframe, gamma=0.2, smooth=1)
 
-        # TA indicators to combine with the Freqai targets
-        # RSI
-        dataframe['rsi'] = ta.RSI(dataframe)
 
-        # Bollinger Bands
-        bollinger = qtpylib.bollinger_bands(qtpylib.typical_price(dataframe), window=20, stds=2)
-        dataframe['bb_lowerband'] = bollinger['lower']
-        dataframe['bb_middleband'] = bollinger['mid']
-        dataframe['bb_upperband'] = bollinger['upper']
-        dataframe["bb_percent"] = (
-            (dataframe["close"] - dataframe["bb_lowerband"]) /
-            (dataframe["bb_upperband"] - dataframe["bb_lowerband"])
-        )
-        dataframe["bb_width"] = (
-            (dataframe["bb_upperband"] - dataframe["bb_lowerband"]) / dataframe["bb_middleband"]
-        )
-
-        # TEMA - Triple Exponential Moving Average
-        dataframe['tema'] = ta.TEMA(dataframe, timeperiod=9)
         
-        dataframe.to_csv('/freqtrade/user_data/populate_indicators.csv', sep=',', encoding='utf-8')
-
         return dataframe
 
     def populate_entry_trend(self, df: DataFrame, metadata: dict) -> DataFrame:
 
         df.loc[
-            (
-                # Signal: RSI crosses above 30
-                (qtpylib.crossed_above(df['rsi'], self.buy_rsi.value)) &
-                (df['tema'] <= df['bb_middleband']) &  # Guard: tema below BB middle
-                (df['tema'] > df['tema'].shift(1)) &  # Guard: tema is raising
-                (df['volume'] > 0) &  # Make sure Volume is not 0
-                (df['do_predict'] == 1) &  # Make sure Freqai is confident in the prediction
-                # Only enter trade if Freqai thinks the trend is in this direction
+            (   
+                (df['do_predict'] == 1) &
                 (df['&s-up_or_down'] == 'up')
             ),
             'enter_long'] = 1
-
-        df.loc[
-            (
-                # Signal: RSI crosses above 70
-                (qtpylib.crossed_above(df['rsi'], self.short_rsi.value)) &
-                (df['tema'] > df['bb_middleband']) &  # Guard: tema above BB middle
-                (df['tema'] < df['tema'].shift(1)) &  # Guard: tema is falling
-                (df['volume'] > 0) &  # Make sure Volume is not 0
-                (df['do_predict'] == 1) &  # Make sure Freqai is confident in the prediction
-                # Only enter trade if Freqai thinks the trend is in this direction
-                (df['&s-up_or_down'] == 'down')
-            ),
-            'enter_short'] = 1
         
         return df
 
@@ -224,24 +237,10 @@ class FreqaiExampleHybridStrategy(IStrategy):
 
         df.loc[
             (
-                # Signal: RSI crosses above 70
-                (qtpylib.crossed_above(df['rsi'], self.sell_rsi.value)) &
-                (df['tema'] > df['bb_middleband']) &  # Guard: tema above BB middle
-                (df['tema'] < df['tema'].shift(1)) &  # Guard: tema is falling
-                (df['volume'] > 0)  # Make sure Volume is not 0
+                (df['do_predict'] == 1) &
+                (df['&s-up_or_down'] == 'down')
             ),
 
             'exit_long'] = 1
-
-        df.loc[
-            (
-                # Signal: RSI crosses above 30
-                (qtpylib.crossed_above(df['rsi'], self.exit_short_rsi.value)) &
-                # Guard: tema below BB middle
-                (df['tema'] <= df['bb_middleband']) &
-                (df['tema'] > df['tema'].shift(1)) &  # Guard: tema is raising
-                (df['volume'] > 0)  # Make sure Volume is not 0
-            ),
-            'exit_short'] = 1
 
         return df
