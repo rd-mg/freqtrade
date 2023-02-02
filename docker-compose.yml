@@ -17,7 +17,7 @@ services:
       # - "./user_data:/freqtrade/user_data"
       - "./freqtrade/user_data:/freqtrade/user_data"
       - "./freqtrade/user_data/conf:/freqtrade/user_data/conf"
-      - "./freqtrade/templates:/freqtrade/templates"
+      - "./freqtrade/user_data/strategies:/freqtrade/user_data/strategies"
       - "./freqtrade/optimize/space:/freqtrade/optimize/space"
     # Expose api on port 8080 (localhost only)
     # Please read the https://www.freqtrade.io/en/stable/rest-api/ documentation
@@ -29,5 +29,7 @@ services:
       trade
       --logfile /freqtrade/user_data/logs/freqtrade.log
       --db-url sqlite:////freqtrade/user_data/tradesv3.sqlite
-      --config /freqtrade/user_data/config_freqai_spot_telegram.json
-      --strategy FreqaiHybridStrategySpot_whitepaper_custom.py
+      --config /freqtrade/user_data/conf/config_freqai_spot_telegram.json
+      --freqaimodel LightGBMClassifier
+      --strategy-path /freqtrade/user_data/strategies
+      --strategy FreqaiHybridStrategySpot_simplified
