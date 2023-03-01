@@ -1,12 +1,12 @@
 {
     "trading_mode": "spot",
-    "max_open_trades": 1,
+    "max_open_trades": 4,
     "stake_currency": "BUSD",
     "stake_amount": 1000,
     "tradable_balance_ratio": 0.9,
     "fiat_display_currency": "USD",
     "dry_run": true,
-    "timeframe": "1h",
+    "timeframe": "15m",
     "dry_run_wallet": 4000,
     "cancel_open_orders_on_exit": true,
     "ignore_roi_if_entry_signal": true,
@@ -30,7 +30,6 @@
             // // // "APT/BUSD", 
             // // "ATOM/BUSD",
             // // "AVAX/BUSD",
-            // "BTC/BUSD",
             // "CAKE/BUSD",
             // // // "CTXC/BUSD", 
             // // // "DOGE/BUSD",
@@ -57,7 +56,8 @@
             // // // "TRX/BUSD",
             // "UNI/BUSD",
             // // // "CRV/BUSD",
-            // "XRP/BUSD"
+            // "XRP/BUSD",
+            // "BTC/BUSD"
         ],
         "pair_blacklist": []
     },
@@ -90,23 +90,24 @@
         "identifier": "bot",
         "fit_live_prediction_candles": 300,
         "rl_config": {
-            "train_cycles": 100,
+            "train_cycles": 20,
+            "randomize_starting_position": true,
             "add_state_info": true,
             "max_trade_duration_candles": 72,
-            "max_training_drawdown_pct": 0.05,
+            "max_training_drawdown_pct": 0.5,
             "cpu_count": 8,
-            "model_type": "PPO",
+            "model_type": "TRPO",
             "policy_type": "MlpPolicy",
-            "net_arch": [512, 128, 3],
+            "net_arch": [256, 128, 64, 3],
             "model_reward_parameters": {
                 "rr": 1,
-                "profit_aim": 0.03,
-                "win_reward_factor": 2
+                "profit_aim": 0.02,
+                "win_reward_factor": 1.1
             }
         },
         "feature_parameters": {
             "include_timeframes": [
-                // "15m",
+                "15m",
                 "1h",
                 "4h"
             ],
@@ -136,8 +137,12 @@
         "continual_learning": true,
         "model_training_parameters": {
             // "n_estimators": 1000,
-            "ent_coef": 0.0,
-            "learning_rate": 0.0005
+            // "ent_coef": 0.0,
+            "learning_rate": 0.00025,
+            "gamma": 0.9,
+            "target_kl": 0.001,
+            "batch_size": 256
+            // "verbose": 1
             // "gamma": 0.9,
             // "verbose": 0
             // "early_stopping_rounds": 100,

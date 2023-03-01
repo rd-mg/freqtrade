@@ -15,10 +15,10 @@ services:
     container_name: freqtrade
     volumes:
       # - "./user_data:/freqtrade/user_data"
-      - "./freqtrade/user_data:/freqtrade/user_data"
-      - "./freqtrade/user_data/conf:/freqtrade/user_data/conf"
-      - "./freqtrade/user_data/strategies:/freqtrade/user_data/strategies"
-      - "./freqtrade/optimize/space:/freqtrade/optimize/space"
+      - "./user_data:/freqtrade/user_data"
+      - "./user_data/conf:/freqtrade/user_data/conf"
+      - "./user_data/strategies:/freqtrade/user_data/strategies"
+      - "./optimize/space:/freqtrade/optimize/space"
     # Expose api on port 8080 (localhost only)
     # Please read the https://www.freqtrade.io/en/stable/rest-api/ documentation
     # before enabling this.
@@ -28,20 +28,20 @@ services:
     command: >
       backtesting
       --logfile /freqtrade/user_data/logs/freqtrade.log
-      --config /freqtrade/user_data/conf/config_freqaiRL_spot_telegram.json
-      --freqaimodel ReinforcementLearner
+      --config /freqtrade/user_data/strategies/config_freqaiRL_spot_telegram.json
+      --freqaimodel MyRLModel
       --strategy-path /freqtrade/user_data/strategies
       --strategy FreqaiRLStrategy
-      --timerange 20221213-20230113
+      --timerange 20221224-20230224
 
     #############
       # plot-dataframe
       # --logfile /freqtrade/user_data/logs/freqtrade.log
-      # --config /freqtrade/user_data/conf/config_freqaiRL_spot_telegram.json
-      # --freqaimodel ReinforcementLearner
+      # --config /freqtrade/user_data/strategies/config_freqaiRL_spot_telegram.json
+      # --freqaimodel MyRLModel
       # --strategy-path /freqtrade/user_data/strategies
       # --strategy FreqaiRLStrategy
-      # --timerange 20221213-20230113
+      # --timerange 20221224-20230224
 
 
 
@@ -49,31 +49,30 @@ services:
     ######## Backtesting ##########
       # backtesting
       # --logfile /freqtrade/user_data/logs/freqtrade.log
-      # --config /freqtrade/user_data/conf/config_freqaiRL_spot_telegram.json
-      # --freqaimodel ReinforcementLearner
+      # --config /freqtrade/user_data/strategies/config_freqaiRL_spot_telegram.json
+      # --freqaimodel MyRLModel
       # --strategy-path /freqtrade/user_data/strategies
       # --strategy FreqaiRLStrategy
-      # --timerange 20221213-20230113
+      # --timerange 20221224-20230224
 
      ######## Hyper-opt ##########
       # hyperopt
       # --logfile /freqtrade/user_data/logs/freqtrade.log
-      # --config /freqtrade/user_data/conf/config_freqaiRL_spot_telegram.json
+      # --config /freqtrade/user_data/strategies/config_freqaiRL_spot_telegram.json
       # --hyperopt-loss ShortTradeDurHyperOptLoss
-      # --freqaimodel ReinforcementLearner
+      # --freqaimodel MyRLModel
       # --strategy-path /freqtrade/user_data/strategies
       # --strategy FreqaiRLStrategy
-      # --timerange 20221213-20230113
-      # --timeframe 1h 
-      # --timeframe-detail 15m
-      # -e 3000 
+      # --timerange 20221224-20230224
+      # --timeframe 15m
+      # -e 100
       # --spaces  stoploss trailing roi
 
     #######  Freqai  ########
       # trade
       # --logfile /freqtrade/user_data/logs/freqtrade.log
       # --db-url sqlite:////freqtrade/user_data/tradesv3.sqlite
-      # --config /freqtrade/user_data/conf/config_freqai_spot_telegram.json
+      # --config /freqtrade/user_data/strategies/config_freqai_spot_telegram.json
       # --freqaimodel LightGBMClassifier
       # --strategy-path /freqtrade/user_data/strategies
       # --strategy FreqaiHybridStrategySpot_simplified
@@ -81,8 +80,8 @@ services:
 
    ######## Download data ##########
       # download-data
-      # --config /freqtrade/user_data/conf/config_freqaiRL_spot_telegram.json
-      # --timerange 20221213-
+      # --config /freqtrade/user_data/strategies/config_freqaiRL_spot_telegram.json
+      # --timerange 20220201-
       # --timeframes 5m 15m 30m 1h 4h 1d
 
       

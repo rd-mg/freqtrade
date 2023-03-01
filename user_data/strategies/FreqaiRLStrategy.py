@@ -5,11 +5,12 @@ import numpy as np
 
 import talib.abstract as ta
 from pandas import DataFrame
+import pandas_ta
 from technical import qtpylib
 from technical.indicators import laguerre
 
 
-from freqtrade.strategy import CategoricalParameter, IStrategy
+from freqtrade.strategy import CategoricalParameter, IStrategy, informative
 
 
 logger = logging.getLogger(__name__)
@@ -25,36 +26,75 @@ class FreqaiRLStrategy(IStrategy):
     generate the variety of features indicated by the user in the
     canonical freqtrade configuration file under config['freqai'].
     """
-
-    minimal_roi = {"0": 0.1, "240": -1}
-
+    
     plot_config = {
-        "main_plot": {},
-        "subplots": {
-            "&-s_close": {"prediction": {"color": "blue"}},
-            "do_predict": {
-                "do_predict": {"color": "brown"},
+        'main_plot': {
+            'bb_upper_band': {'color': 'blue'},
+            'bb_middle_band': {'color': 'brown'},
+            'bb_lower_band': {'color': 'blue'},
+            'ema': {'color': 'white'},
+            'ema-9': {'color': 'red'},
+        },
+        'subplots': {
+            "laguerre": {
+                'laguerre': {'color': 'black'},
             },
+            "macd": {
+                'macd': {'color': 'green'},
+            },
+            "stochrsi_fastk": {
+                'STOCHRSIk_9_9_3_3': {'color': 'blue'},
+            },
+            "ema_slope": {
+                'ema_slope': {'color': 'red'},
+            },
+            "&-action": {
+                '& -action': {"color": "blue"}
+            },
+            "do_predict": {
+                'do_predict': {"color": "brown"}
+                },
         },
     }
 
+
     process_only_new_candles = True
-    # Stoploss:
-    stoploss = -0.02
 
     #timeframe
-    timeframe = '1h'
+    timeframe = '15m'
 
+    # ROI table:
+    minimal_roi = {
+    "0": 0.1,
+    "93": 0.05,
+    "259": 0.044,
+    "450": 0
+    }
+    # Stoploss:
+    stoploss = -0.02
     # Trailing stop:
     trailing_stop = True
-    trailing_stop_positive = 0.021
-    trailing_stop_positive_offset = 0.025
+    trailing_stop_positive = 0.282
+    trailing_stop_positive_offset = 0.372
     trailing_only_offset_is_reached = False
-    
+
     use_exit_signal = True
     # this is the maximum period fed to talib (timeframe independent)
     startup_candle_count: int = 300
     can_short = False
+    
+    @informative('1h')
+    @informative('4h')
+    def populate_indicators_1h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe.ta.stochrsi(length=9, rsi_length=9, k=3, d=3, append=True)
+        # macd = ta.MACD(dataframe, fastperiod=5, slowperiod=9, signalperiod=9)
+        # # dataframe['macd'] = macd['macd']
+        # # dataframe['macdsignal'] = macd['macdsignal']
+        # dataframe['macdhist'] = macd['macdhist']
+        # dataframe["ema"] = ta.EMA(dataframe, timeperiod=2)
+        # dataframe["ema-signal"] = ta.EMA(dataframe, timeperiod=9)
+        dataframe["laguerre"] = laguerre(dataframe, gamma=0.25, smooth=1)
+        return dataframe
 
     def feature_engineering_expand_all(self, dataframe, period, **kwargs):
         """
@@ -79,11 +119,11 @@ class FreqaiRLStrategy(IStrategy):
         :param period: period of the indicator - usage example:
         dataframe["%-ema-period"] = ta.EMA(dataframe, timeperiod=period)
         """
-
-        macd = ta.MACD(dataframe, fastperiod=5, slowperiod=9, signalperiod=period)
-        dataframe[f"%-macd{period}"] = macd['macd']
+        slow = period+4
+        macd = ta.MACD(dataframe, fastperiod=period, slowperiod=slow, signalperiod=period)
+        # dataframe[f"%-macd{period}"] = macd['macd']
         # dataframe[f"%-macd_macdsignal{period}"] = macd['macdsignal']
-        # dataframe[f"%-macdhist-{period}"] = macd['macdhist']
+        dataframe[f"%-macdhist-{period}"] = macd['macdhist']
         dataframe[f"%-rsi-{period}"] = ta.RSI(dataframe, timeperiod=period)
         # dataframe["%-mfi-period{period}"] = ta.MFI(dataframe, timeperiod=period)
         dataframe[f"%-cci-{period}"] = ta.CCI(dataframe, timeperiod=period)
@@ -268,7 +308,9 @@ class FreqaiRLStrategy(IStrategy):
 
         dataframe = self.freqai.start(dataframe, metadata, self)
         
-        # dataframe["laguerre"] = laguerre(dataframe, gamma=0.25, smooth=1)
+        dataframe.ta.stochrsi(length=9, rsi_length=9, k=3, d=3, append=True)
+        
+        dataframe["laguerre"] = laguerre(dataframe, gamma=0.25, smooth=1)
 
         # for val in self.std_dev_multiplier_buy.range:
         #     dataframe[f'target_roi_{val}'] = (
@@ -283,7 +325,12 @@ class FreqaiRLStrategy(IStrategy):
     def populate_entry_trend(self, df: DataFrame, metadata: dict) -> DataFrame:
 
         enter_long_conditions = [df["do_predict"] == 1,
-                                 df["&-action"] == 1]
+                                df["&-action"] == 1,
+                                # (df['STOCHRSIk_9_9_3_3_1h'] > df['STOCHRSIk_9_9_3_3_1h'].shift(1)),
+                                # (df['laguerre_1h'] > df['laguerre_1h'].shift(1)),
+                                # (df['STOCHRSIk_9_9_3_3_4h'] > df['STOCHRSIk_9_9_3_3_4h'].shift(1)),
+                                (df['laguerre_4h'] > df['laguerre_4h'].shift(1)) 
+                                ]
 
         if enter_long_conditions:
             df.loc[reduce(lambda x, y: x & y, enter_long_conditions), "enter_long"] = 1
@@ -298,7 +345,8 @@ class FreqaiRLStrategy(IStrategy):
         return df
 
     def populate_exit_trend(self, df: DataFrame, metadata: dict) -> DataFrame:
-        exit_long_conditions = [df["do_predict"] == 1, df["&-action"] == 2]
+        exit_long_conditions = [df["do_predict"] == 1,
+                                df["&-action"] == 2]
         if exit_long_conditions:
             df.loc[reduce(lambda x, y: x & y, exit_long_conditions), "exit_long"] = 1
 
