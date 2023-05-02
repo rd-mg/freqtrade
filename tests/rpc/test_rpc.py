@@ -4,6 +4,7 @@ from unittest.mock import ANY, MagicMock, PropertyMock
 
 import pytest
 from numpy import isnan
+from sqlalchemy import select
 
 from freqtrade.edge import PairInfo
 from freqtrade.enums import SignalDirection, State, TradingMode
@@ -87,6 +88,9 @@ def test_rpc_trade_status(default_conf, ticker, fee, mocker) -> None:
         'is_short': False,
         'funding_fees': 0.0,
         'trading_mode': TradingMode.SPOT,
+        'amount_precision': 8.0,
+        'price_precision': 8.0,
+        'precision_mode': 2,
         'orders': [{
             'amount': 91.07468123, 'average': 1.098e-05, 'safe_price': 1.098e-05,
             'cost': 0.0009999999999054, 'filled': 91.07468123, 'ft_order_side': 'buy',
@@ -124,17 +128,6 @@ def test_rpc_trade_status(default_conf, ticker, fee, mocker) -> None:
         'profit_pct': 0.0,
         'profit_abs': 0.0,
         'total_profit_abs': 0.0,
-        'stop_loss_abs': 0.0,
-        'stop_loss_pct': None,
-        'stop_loss_ratio': None,
-        'stoploss_current_dist': -1.099e-05,
-        'stoploss_current_dist_ratio': -1.0,
-        'stoploss_current_dist_pct': pytest.approx(-100.0),
-        'stoploss_entry_dist': -0.0010025,
-        'stoploss_entry_dist_ratio': -1.0,
-        'initial_stop_loss_abs': 0.0,
-        'initial_stop_loss_pct': None,
-        'initial_stop_loss_ratio': None,
         'open_order': '(limit buy rem=91.07468123)',
     })
     response_unfilled['orders'][0].update({
@@ -354,7 +347,7 @@ def test_rpc_delete_trade(mocker, default_conf, fee, markets, caplog, is_short):
     with pytest.raises(RPCException, match='invalid argument'):
         rpc._rpc_delete('200')
 
-    trades = Trade.query.all()
+    trades = Trade.session.scalars(select(Trade)).all()
     trades[1].stoploss_order_id = '1234'
     trades[2].stoploss_order_id = '1234'
     assert len(trades) > 2
@@ -553,51 +546,67 @@ def test_rpc_balance_handle(default_conf, mocker, tickers):
             'free': 10.0,
             'balance': 12.0,
             'used': 2.0,
+            'bot_owned': 9.9,  # available stake - reducing by reserved amount
             'est_stake': 10.0,  # In futures mode, "free" is used here.
+            'est_stake_bot': 9.9,
             'stake': 'BTC',
             'is_position': False,
             'leverage': 1.0,
             'position': 0.0,
             'side': 'long',
+            'is_bot_managed': True,
         },
         {
             'free': 1.0,
             'balance': 5.0,
             'currency': 'ETH',
+            'bot_owned': 0,
             'est_stake': 0.30794,
+            'est_stake_bot': 0,
             'used': 4.0,
             'stake': 'BTC',
             'is_position': False,
             'leverage': 1.0,
             'position': 0.0,
             'side': 'long',
-
+            'is_bot_managed': False,
         },
         {
             'free': 5.0,
             'balance': 10.0,
             'currency': 'USDT',
+            'bot_owned': 0,
             'est_stake': 0.0011562404610161968,
+            'est_stake_bot': 0,
             'used': 5.0,
             'stake': 'BTC',
             'is_position': False,
             'leverage': 1.0,
             'position': 0.0,
             'side': 'long',
+            'is_bot_managed': False,
         },
         {
             'free': 0.0,
             'balance': 0.0,
             'currency': 'ETH/USDT:USDT',
             'est_stake': 20,
+            'est_stake_bot': 20,
             'used': 0,
             'stake': 'BTC',
             'is_position': True,
             'leverage': 5.0,
             'position': 1000.0,
             'side': 'short',
+            'is_bot_managed': True,
         }
     ]
+    assert pytest.approx(result['total_bot']) == 29.9
+    assert pytest.approx(result['total']) == 30.309096
+    assert result['starting_capital'] == 10
+    # Very high starting capital ratio, because the futures position really has the wrong unit.
+    # TODO: improve this test (see comment above)
+    assert result['starting_capital_ratio'] == pytest.approx(1.98999999)
 
 
 def test_rpc_start(mocker, default_conf) -> None:
@@ -717,7 +726,7 @@ def test_rpc_force_exit(default_conf, ticker, fee, mocker) -> None:
     mocker.patch(f'{EXMS}._dry_is_price_crossed', MagicMock(return_value=False))
     freqtradebot.enter_positions()
     # make an limit-buy open trade
-    trade = Trade.query.filter(Trade.id == '3').first()
+    trade = Trade.session.scalars(select(Trade).filter(Trade.id == '3')).first()
     filled_amount = trade.amount / 2
     # Fetch order - it's open first, and closed after cancel_order is called.
     mocker.patch(
@@ -753,7 +762,7 @@ def test_rpc_force_exit(default_conf, ticker, fee, mocker) -> None:
 
     freqtradebot.config['max_open_trades'] = 3
     freqtradebot.enter_positions()
-    trade = Trade.query.filter(Trade.id == '2').first()
+    trade = Trade.session.scalars(select(Trade).filter(Trade.id == '2')).first()
     amount = trade.amount
     # make an limit-buy open trade, if there is no 'filled', don't sell it
     mocker.patch(
@@ -771,7 +780,7 @@ def test_rpc_force_exit(default_conf, ticker, fee, mocker) -> None:
     assert cancel_order_mock.call_count == 2
     assert trade.amount == amount
 
-    trade = Trade.query.filter(Trade.id == '3').first()
+    trade = Trade.session.scalars(select(Trade).filter(Trade.id == '3')).first()
 
     # make an limit-sell open trade
     mocker.patch(

@@ -251,7 +251,7 @@ class FreqaiDataKitchen:
                 (drop_index == 0) & (drop_index_labels == 0)
             ]
             logger.info(
-                f"dropped {len(unfiltered_df) - len(filtered_df)} training points"
+                f"{self.pair}: dropped {len(unfiltered_df) - len(filtered_df)} training points"
                 f" due to NaNs in populated dataset {len(unfiltered_df)}."
             )
             if (1 - len(filtered_df) / len(unfiltered_df)) > 0.1 and self.live:
@@ -675,7 +675,7 @@ class FreqaiDataKitchen:
                 ]
 
             logger.info(
-                f"SVM tossed {len(y_pred) - kept_points.sum()}"
+                f"{self.pair}: SVM tossed {len(y_pred) - kept_points.sum()}"
                 f" test points from {len(y_pred)} total points."
             )
 
@@ -949,7 +949,7 @@ class FreqaiDataKitchen:
 
         if (len(do_predict) - do_predict.sum()) > 0:
             logger.info(
-                f"DI tossed {len(do_predict) - do_predict.sum()} predictions for "
+                f"{self.pair}: DI tossed {len(do_predict) - do_predict.sum()} predictions for "
                 "being too far from training data."
             )
 
@@ -1291,7 +1291,7 @@ class FreqaiDataKitchen:
 
         return dataframe
 
-    def use_strategy_to_populate_indicators(
+    def use_strategy_to_populate_indicators(  # noqa: C901
         self,
         strategy: IStrategy,
         corr_dataframes: dict = {},
@@ -1362,11 +1362,11 @@ class FreqaiDataKitchen:
                 dataframe = self.populate_features(dataframe.copy(), corr_pair, strategy,
                                                    corr_dataframes, base_dataframes, True)
 
-        dataframe = strategy.set_freqai_targets(dataframe.copy(), metadata=metadata)
+        if self.live:
+            dataframe = strategy.set_freqai_targets(dataframe.copy(), metadata=metadata)
+            dataframe = self.remove_special_chars_from_feature_names(dataframe)
 
         self.get_unique_classes_from_labels(dataframe)
-
-        dataframe = self.remove_special_chars_from_feature_names(dataframe)
 
         if self.config.get('reduce_df_footprint', False):
             dataframe = reduce_dataframe_footprint(dataframe)
