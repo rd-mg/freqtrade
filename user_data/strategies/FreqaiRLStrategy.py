@@ -65,18 +65,18 @@ class FreqaiRLStrategy(IStrategy):
 
     # ROI table:
     minimal_roi = {
-    "0": 0.1,
-    "93": 0.05,
-    "259": 0.044,
-    "450": 0
+    "0": 0.11900000000000001,
+    "102": 0.049,
+    "249": 0.018,
+    "599": 0
     }
     # Stoploss:
-    stoploss = -0.02
+    stoploss = -0.336
     # Trailing stop:
     trailing_stop = True
-    trailing_stop_positive = 0.282
-    trailing_stop_positive_offset = 0.372
-    trailing_only_offset_is_reached = False
+    trailing_stop_positive = 0.319
+    trailing_stop_positive_offset = 0.401
+    trailing_only_offset_is_reached = True
 
     use_exit_signal = True
     # this is the maximum period fed to talib (timeframe independent)

@@ -1,12 +1,13 @@
 {
     "trading_mode": "spot",
-    "max_open_trades": 4,
+    "max_open_trades": 6,
     "stake_currency": "BUSD",
     "stake_amount": 1000,
     "tradable_balance_ratio": 0.9,
     "fiat_display_currency": "USD",
     "dry_run": true,
-    "timeframe": "15m",
+    "fee": 0.00075,
+    "timeframe": "1h",
     "dry_run_wallet": 4000,
     "cancel_open_orders_on_exit": true,
     "ignore_roi_if_entry_signal": true,
@@ -21,43 +22,43 @@
         "ccxt_config": {},
         "ccxt_async_config": {},
         "pair_whitelist": [
-            "BNB/BUSD"
-            // "AXS/BUSD",
-            // // // "AAVE/BUSD",
-            // "ADA/BUSD",
-            // // "ALGO/BUSD",
-            // // "APE/BUSD", 
-            // // // "APT/BUSD", 
-            // // "ATOM/BUSD",
-            // // "AVAX/BUSD",
-            // "CAKE/BUSD",
-            // // // "CTXC/BUSD", 
-            // // // "DOGE/BUSD",
-            // "DOT/BUSD",
-            // // // "NMR/BUSD",
-            // // "ETC/BUSD", 
-            // "ETH/BUSD",
-            // // "FET/BUSD", 
-            // // // "FTT/BUSD",
-            // // "GALA/BUSD", 
-            // // "GMT/BUSD", 
-            // "LINK/BUSD",
-            // "LOKA/BUSD", 
-            // "LTC/BUSD",
-            // "MANA/BUSD",
-            // "MATIC/BUSD",
-            // // "NEAR/BUSD",
-            // // "OCEAN/BUSD",  
-            // // "RUNE/BUSD", 
-            // // // "SAND/BUSD", 
-            // // // "SHIB/BUSD", 
-            // "SOL/BUSD",
-            // // // "SUSHI/BUSD",
-            // // // "TRX/BUSD",
-            // "UNI/BUSD",
-            // // // "CRV/BUSD",
-            // "XRP/BUSD",
-            // "BTC/BUSD"
+            "BNB/BUSD",
+            "AXS/BUSD",
+            // // "AAVE/BUSD",
+            "ADA/BUSD",
+            // "ALGO/BUSD",
+            // "APE/BUSD", 
+            // // "APT/BUSD", 
+            // "ATOM/BUSD",
+            // "AVAX/BUSD",
+            "CAKE/BUSD",
+            // // "CTXC/BUSD", 
+            // // "DOGE/BUSD",
+            "DOT/BUSD",
+            // // "NMR/BUSD",
+            // "ETC/BUSD", 
+            "ETH/BUSD",
+            // "FET/BUSD", 
+            // // "FTT/BUSD",
+            // "GALA/BUSD", 
+            // "GMT/BUSD", 
+            "LINK/BUSD",
+            "LOKA/BUSD", 
+            "LTC/BUSD",
+            "MANA/BUSD",
+            "MATIC/BUSD",
+            // "NEAR/BUSD",
+            // "OCEAN/BUSD",  
+            // "RUNE/BUSD", 
+            // // "SAND/BUSD", 
+            // // "SHIB/BUSD", 
+            "SOL/BUSD",
+            // // "SUSHI/BUSD",
+            // // "TRX/BUSD",
+            "UNI/BUSD",
+            // // "CRV/BUSD",
+            "XRP/BUSD",
+            "BTC/BUSD"
         ],
         "pair_blacklist": []
     },
@@ -90,42 +91,42 @@
         "identifier": "bot",
         "fit_live_prediction_candles": 300,
         "rl_config": {
-            "train_cycles": 20,
+            "train_cycles": 50,
             "randomize_starting_position": true,
             "add_state_info": true,
-            "max_trade_duration_candles": 72,
-            "max_training_drawdown_pct": 0.5,
-            "cpu_count": 8,
+            "max_trade_duration_candles": 14,
+            "max_training_drawdown_pct": 0.8,
+            "cpu_count": 4,
             "model_type": "TRPO",
             "policy_type": "MlpPolicy",
             "net_arch": [256, 128, 64, 3],
             "model_reward_parameters": {
                 "rr": 1,
                 "profit_aim": 0.02,
-                "win_reward_factor": 1.1
+                "win_reward_factor": 2
             }
         },
         "feature_parameters": {
             "include_timeframes": [
-                "15m",
-                "1h",
-                "4h"
+                // "15m"
+                "1h"
+                // "4h"
             ],
             "include_corr_pairlist": [
                 "BTC/BUSD"
             ],
-            "label_period_candles": 5,
-            "include_shifted_candles": 5,
+            "label_period_candles": 1,
+            "include_shifted_candles": 2,
             "DI_threshold": 0.9,
             "weight_factor": 0.3,
             "principal_component_analysis": false,
-            "use_SVM_to_remove_outliers": true,
-            "use_DBSCAN_to_remove_outliers": true,
+            "use_SVM_to_remove_outliers": false,
+            "use_DBSCAN_to_remove_outliers": false,
             "indicator_periods_candles": [
                 5,
-                9,
-                21,
-                73
+                9
+                // 21,
+                // 73
             ],
             "plot_feature_importances": 0
         },
@@ -134,7 +135,7 @@
             "random_state": 1
         },
         "reduce_df_footprint": true,
-        "continual_learning": true,
+        "continual_learning": false,
         "model_training_parameters": {
             // "n_estimators": 1000,
             // "ent_coef": 0.0,
@@ -152,7 +153,7 @@
             // "epochs": 5
         }
     },
-    "bot_name": "bot-15m",
+    "bot_name": "bot-trade",
     "force_entry_enable": true,
     "initial_state": "running",
     "internals": {
