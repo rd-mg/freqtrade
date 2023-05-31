@@ -43,7 +43,7 @@ class MyRLModel(ReinforcementLearner):
                 return -2
 
             # Define constants
-            max_trade_duration = self.rl_config.get('max_trade_duration_candles', 300)
+            max_trade_duration = self.rl_config.get('max_trade_duration_candles', 16)
             factor = 1.
             risk_factor = 1.
 
@@ -62,9 +62,9 @@ class MyRLModel(ReinforcementLearner):
                     factor = 1.
                     return 7 * factor
 
-            # Penalty for not entering trades 
+            # Penalty for not entering trades uptrend
             if action == Actions.Neutral.value and self._position == Positions.Neutral:
-                if self.prices.iloc[self._current_tick].close < self.prices.iloc[self._current_tick].open:
+                if self.prices.iloc[self._current_tick].close > self.prices.iloc[self._current_tick].open:
                     return -1
 
             # Penalize for holding a losing position for too long
@@ -97,8 +97,8 @@ class MyRLModel(ReinforcementLearner):
             else:
                 risk_factor *= 1.
 
-            # Penalty for trading too frequently
-            if self._last_trade_tick is not None and self._current_tick - self._last_trade_tick < 10:
+            # Penalty for trading long time
+            if self._last_trade_tick is not None and self._current_tick - self._last_trade_tick > max_trade_duration:
                 return -1
 
             return 0.
