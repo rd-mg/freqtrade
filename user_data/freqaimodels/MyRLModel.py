@@ -49,8 +49,8 @@ class MyRLModel(ReinforcementLearner):
 
             # Calculate current PnL and risk
             pnl = self.get_unrealized_profit()
-            drawdown = self.get_max_drawdown()
-            volatility = self.get_volatility()
+            # drawdown = self.get_max_drawdown()
+            # volatility = self.get_volatility()
 
             # Increase reward for entering trades
             if action == Actions.Buy.value and self._position == Positions.Neutral:
@@ -69,7 +69,7 @@ class MyRLModel(ReinforcementLearner):
 
             # Penalize for holding a losing position for too long
             if self._position == Positions.Long and pnl < 0:
-                return pnl * np.sqrt(drawdown)
+                return pnl
 
             # Increase reward for closing winning trades
             if action == Actions.Sell.value and self._position == Positions.Long:
@@ -90,12 +90,12 @@ class MyRLModel(ReinforcementLearner):
                     factor *= 0.8
 
             # Adjust factor based on market conditions
-            if volatility > 0.1:
-                risk_factor *= 0.5
-            elif drawdown > 0.1:
-                risk_factor *= 0.8
-            else:
-                risk_factor *= 1.
+            # if volatility > 0.1:
+            #     risk_factor *= 0.5
+            # elif drawdown > 0.1:
+            #     risk_factor *= 0.8
+            # else:
+            #     risk_factor *= 1.
 
             # Penalty for trading long time
             if self._last_trade_tick is not None and self._current_tick - self._last_trade_tick > max_trade_duration:

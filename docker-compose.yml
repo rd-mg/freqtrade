@@ -26,11 +26,17 @@ services:
       - "127.0.0.1:8080:8080"
     # Default command used when running `docker compose up`
     command: >
-      download-data
+      hyperopt
+      --logfile /freqtrade/user_data/logs/freqtrade.log
       --config /freqtrade/user_data/strategies/config_freqaiRL_spot_telegram.json
-      --timerange 20200201-
-      --timeframes 5m 15m
-      
+      --hyperopt-loss ScalpingTradeHyperOptLoss
+      --freqaimodel MyRLModel
+      --strategy-path /freqtrade/user_data/strategies
+      --strategy FreqaiRLStrategyWPv4
+      --timerange 20221224-20230530
+      --timeframe 15m
+      -e 3000
+      --spaces sell buy roi
 
     #############
       # plot-dataframe
