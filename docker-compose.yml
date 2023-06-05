@@ -30,7 +30,7 @@ services:
       --logfile /freqtrade/user_data/logs/freqtrade.log
       --config /freqtrade/user_data/strategies/config_freqaiRL_spot_telegram.json
       --hyperopt-loss ScalpingTradeHyperOptLoss
-      --freqaimodel MyRLModel
+      --freqaimodel MyRLModelv2
       --strategy-path /freqtrade/user_data/strategies
       --strategy FreqaiRLStrategyWPv4
       --timerange 20221224-20230530
