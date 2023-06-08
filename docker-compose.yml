@@ -42,10 +42,10 @@ services:
       --freqaimodel ReinforcementLearner
       --strategy-path /freqtrade/user_data/strategies
       --strategy FreqaiRLStrategyWPv1
-      --timerange 20221224-20230530
+      --timerange 20230101-20230530
       --timeframe 15m
       -e 3000
-      --spaces roi
+      --spaces buy sell roi
 
     #############
       # plot-dataframe

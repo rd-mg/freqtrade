@@ -85,8 +85,8 @@
     "freqai": {
         "enabled": true,
         "purge_old_models": false,
-        "train_period_days": 360,
-        "backtest_period_days": 60,
+        "train_period_days": 30,
+        "backtest_period_days": 6,
         "live_retrain_hours": 168,
         "identifier": "bot",
         "fit_live_prediction_candles": 300,
@@ -126,6 +126,7 @@
             "indicator_periods_candles": [
                 5,
                 9,
+                // 14,
                 21
                 // 73
             ],

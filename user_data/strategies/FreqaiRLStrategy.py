@@ -130,31 +130,31 @@ class FreqaiRLStrategy(IStrategy):
         dataframe[f"%-adx-{period}"] = ta.ADX(dataframe, timeperiod=period)
         # dataframe["%-sma-{period}"] = ta.SMA(dataframe, timeperiod=period)
         dataframe[f"%-ema-{period}"] = ta.EMA(dataframe, timeperiod=period)
-        # StochRSI = ta.STOCHRSI(dataframe, timeperiod=period, fastk_period=3, fastd_period=3)
-        # dataframe[f"%-stochrsi-k_{period}"] = StochRSI.fastk
-        # dataframe[f"%-stochrsi-d_{period}"] = StochRSI.fastd
+        StochRSI = ta.STOCHRSI(dataframe, timeperiod=period, fastk_period=3, fastd_period=3)
+        dataframe[f"%-stochrsi-k_{period}"] = StochRSI.fastk
+        dataframe[f"%-stochrsi-d_{period}"] = StochRSI.fastd
 
 
-        # bollinger = qtpylib.bollinger_bands(
-        #     qtpylib.typical_price(dataframe), window=period, stds=2.2
-        # )
-        # dataframe["bb_lowerband-period"] = bollinger["lower"]
-        # dataframe["bb_middleband-period"] = bollinger["mid"]
-        # dataframe["bb_upperband-period"] = bollinger["upper"]
+        bollinger = qtpylib.bollinger_bands(
+            qtpylib.typical_price(dataframe), window=period, stds=2.2
+        )
+        dataframe["bb_lowerband-period"] = bollinger["lower"]
+        dataframe["bb_middleband-period"] = bollinger["mid"]
+        dataframe["bb_upperband-period"] = bollinger["upper"]
 
-        # dataframe["%-bb_width-period"] = (
-        #     dataframe["bb_upperband-period"]
-        #     - dataframe["bb_lowerband-period"]
-        # ) / dataframe["bb_middleband-period"]
-        # dataframe["%-close-bb_lower-period"] = (
-        #     dataframe["close"] / dataframe["bb_lowerband-period"]
-        # )
+        dataframe["%-bb_width-period"] = (
+            dataframe["bb_upperband-period"]
+            - dataframe["bb_lowerband-period"]
+        ) / dataframe["bb_middleband-period"]
+        dataframe["%-close-bb_lower-period"] = (
+            dataframe["close"] / dataframe["bb_lowerband-period"]
+        )
 
-        # dataframe["%-roc-period"] = ta.ROC(dataframe, timeperiod=period)
+        dataframe["%-roc-period"] = ta.ROC(dataframe, timeperiod=period)
 
-        # dataframe["%-relative_volume-period"] = (
-        #     dataframe["volume"] / dataframe["volume"].rolling(period).mean()
-        # )
+        dataframe["%-relative_volume-period"] = (
+            dataframe["volume"] / dataframe["volume"].rolling(period).mean()
+        )
         
         ### SuperTrend indicators ###
         t=period
