@@ -38,14 +38,18 @@ services:
       hyperopt
       --logfile /freqtrade/user_data/logs/freqtrade.log
       --config /freqtrade/user_data/strategies/config_freqaiRL_spot_telegram.json
-      --hyperopt-loss ScalpingTradeHyperOptLoss
-      --freqaimodel ReinforcementLearner
+      --freqaimodel MyRLModelv4
       --strategy-path /freqtrade/user_data/strategies
-      --strategy FreqaiRLStrategyWPv1
-      --timerange 20230101-20230530
+      --strategy FreqaiRLStrategyWPv3
+      --timerange 20221201-20230530
       --timeframe 15m
-      -e 3000
-      --spaces buy sell roi
+      --hyperopt-loss ScalpingTradeHyperOptLoss
+      -e 5000
+      --spaces buy sell
+
+
+
+
 
     #############
       # plot-dataframe
