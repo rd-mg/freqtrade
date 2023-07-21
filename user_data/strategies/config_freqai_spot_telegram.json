@@ -6,7 +6,7 @@
     "tradable_balance_ratio": 0.9,
     "fiat_display_currency": "USD",
     "dry_run": true,
-    "timeframe": "15m",
+    "timeframe": "1h",
     "dry_run_wallet": 4000,
     "cancel_open_orders_on_exit": true,
     "ignore_roi_if_entry_signal": true,
@@ -88,13 +88,13 @@
         "train_period_days": 120,
         "backtest_period_days": 30,
         "live_retrain_hours": 168,
-        "identifier": "bot-15m",
+        "identifier": "bot-1h",
         "fit_live_prediction_candles": 300,
         "feature_parameters": {
             "include_timeframes": [
-                "15m",
+                // "15m",
                 "1h",
-                "4h"
+                // "4h"
             ],
             "include_corr_pairlist": [
                 "BTC/BUSD"
@@ -128,7 +128,7 @@
             "n_jobs": 4
         }
     },
-    "bot_name": "bot-15m",
+    "bot_name": "bot-1h",
     "force_entry_enable": true,
     "initial_state": "running",
     "internals": {
