@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Literal, Tuple
 from freqtrade.enums import CandleType, PriceType, RPCMessageType
 
 
+DOCS_LINK = "https://www.freqtrade.io/en/stable"
 DEFAULT_CONFIG = 'config.json'
-DEFAULT_EXCHANGE = 'bittrex'
 PROCESS_THROTTLE_SECS = 5  # sec
 HYPEROPT_EPOCH = 100  # epochs
 RETRY_TIMEOUT = 30  # sec
@@ -65,6 +65,7 @@ TELEGRAM_SETTING_OPTIONS = ['on', 'off', 'silent']
 WEBHOOK_FORMAT_OPTIONS = ['form', 'json', 'raw']
 FULL_DATAFRAME_THRESHOLD = 100
 CUSTOM_TAG_MAX_LENGTH = 255
+DL_DATA_TIMEFRAMES = ['1m', '5m']
 
 ENV_VAR_PREFIX = 'FREQTRADE__'
 
@@ -110,6 +111,8 @@ MINIMAL_CONFIG = {
         }
     }
 }
+
+__MESSAGE_TYPE_DICT: Dict[str, Dict[str, str]] = {x: {'type': 'object'} for x in RPCMessageType}
 
 # Required json-schema for user specified config
 CONF_SCHEMA = {
@@ -163,6 +166,9 @@ CONF_SCHEMA = {
         'trading_mode': {'type': 'string', 'enum': TRADING_MODES},
         'margin_mode': {'type': 'string', 'enum': MARGIN_MODES},
         'reduce_df_footprint': {'type': 'boolean', 'default': False},
+        'minimum_trade_amount': {'type': 'number', 'default': 10},
+        'targeted_trade_amount': {'type': 'number', 'default': 20},
+        'lookahead_analysis_exportfilename': {'type': 'string'},
         'liquidation_buffer': {'type': 'number', 'minimum': 0.0, 'maximum': 0.99},
         'backtest_breakdown': {
             'type': 'array',
@@ -350,7 +356,8 @@ CONF_SCHEMA = {
                 'format': {'type': 'string', 'enum': WEBHOOK_FORMAT_OPTIONS, 'default': 'form'},
                 'retries': {'type': 'integer', 'minimum': 0},
                 'retry_delay': {'type': 'number', 'minimum': 0},
-                **dict([(x, {'type': 'object'}) for x in RPCMessageType]),
+                **__MESSAGE_TYPE_DICT,
+                # **{x: {'type': 'object'} for x in RPCMessageType},
                 # Below -> Deprecated
                 'webhookentry': {'type': 'object'},
                 'webhookentrycancel': {'type': 'object'},

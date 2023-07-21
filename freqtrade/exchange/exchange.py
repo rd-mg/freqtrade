@@ -80,9 +80,8 @@ class Exchange:
         "mark_ohlcv_price": "mark",
         "mark_ohlcv_timeframe": "8h",
         "ccxt_futures_name": "swap",
-        "fee_cost_in_contracts": False,  # Fee cost needs contract conversion
         "needs_trading_fees": False,  # use fetch_trading_fees to cache fees
-        "order_props_in_contracts": ['amount', 'cost', 'filled', 'remaining'],
+        "order_props_in_contracts": ['amount', 'filled', 'remaining'],
         # Override createMarketBuyOrderRequiresPrice where ccxt has it wrong
         "marketOrderRequiresPrice": False,
     }
@@ -301,7 +300,7 @@ class Exchange:
         return list((self._api.timeframes or {}).keys())
 
     @property
-    def markets(self) -> Dict:
+    def markets(self) -> Dict[str, Any]:
         """exchange ccxt markets"""
         if not self._markets:
             logger.info("Markets were not loaded. Loading them now..")
@@ -1148,8 +1147,8 @@ class Exchange:
         else:
             limit_rate = stop_price * (2 - limit_price_pct)
 
-        bad_stop_price = ((stop_price <= limit_rate) if side ==
-                          "sell" else (stop_price >= limit_rate))
+        bad_stop_price = ((stop_price < limit_rate) if side ==
+                          "sell" else (stop_price > limit_rate))
         # Ensure rate is less than stop price
         if bad_stop_price:
             # This can for example happen if the stop / liquidation price is set to 0
@@ -1859,9 +1858,6 @@ class Exchange:
         if fee_curr is None:
             return None
         fee_cost = float(fee['cost'])
-        if self._ft_has['fee_cost_in_contracts']:
-            # Convert cost via "contracts" conversion
-            fee_cost = self._contracts_to_amount(symbol, fee['cost'])
 
         # Calculate fee based on order details
         if fee_curr == self.get_pair_base_currency(symbol):

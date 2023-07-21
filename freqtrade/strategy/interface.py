@@ -168,7 +168,7 @@ class IStrategy(ABC, HyperStrategyMixin):
                 download_all_data_for_training(self.dp, self.config)
         else:
             # Gracious failures if freqAI is disabled but "start" is called.
-            class DummyClass():
+            class DummyClass:
                 def start(self, *args, **kwargs):
                     raise OperationalException(
                         'freqAI is not enabled. '
@@ -1300,7 +1300,7 @@ class IStrategy(ABC, HyperStrategyMixin):
             timedout = (order.status == 'open' and order.order_date_utc < timeout_threshold)
             if timedout:
                 return True
-        time_method = (self.check_exit_timeout if order.side == trade.exit_side
+        time_method = (self.check_exit_timeout if order.ft_order_side == trade.exit_side
                        else self.check_entry_timeout)
 
         return strategy_safe_wrapper(time_method,

@@ -3489,6 +3489,27 @@ def test_stoploss_order_unsupported_exchange(default_conf, mocker):
         exchange.stoploss_adjust(1, {}, side="sell")
 
 
+@pytest.mark.parametrize('side,ratio,expected', [
+    ('sell', 0.99, 99.0),  # Default
+    ('sell', 0.999, 99.9),
+    ('sell', 1, 100),
+    ('sell', 1.1, InvalidOrderException),
+    ('buy', 0.99, 101.0),  # Default
+    ('buy', 0.999, 100.1),
+    ('buy', 1, 100),
+    ('buy', 1.1, InvalidOrderException),
+    ])
+def test__get_stop_limit_rate(default_conf_usdt, mocker, side, ratio, expected):
+    exchange = get_patched_exchange(mocker, default_conf_usdt, id='binance')
+
+    order_types = {'stoploss_on_exchange_limit_ratio': ratio}
+    if isinstance(expected, type) and issubclass(expected, Exception):
+        with pytest.raises(expected):
+            exchange._get_stop_limit_rate(100, order_types, side)
+    else:
+        assert exchange._get_stop_limit_rate(100, order_types, side) == expected
+
+
 def test_merge_ft_has_dict(default_conf, mocker):
     mocker.patch.multiple(EXMS,
                           _init_ccxt=MagicMock(return_value=MagicMock()),
@@ -4322,11 +4343,11 @@ def test__fetch_and_calculate_funding_fees(
     ex = get_patched_exchange(mocker, default_conf, api_mock, id=exchange)
     mocker.patch(f'{EXMS}.timeframes', PropertyMock(return_value=['1h', '4h', '8h']))
     funding_fees = ex._fetch_and_calculate_funding_fees(
-        pair='ADA/USDT', amount=amount, is_short=True, open_date=d1, close_date=d2)
+        pair='ADA/USDT:USDT', amount=amount, is_short=True, open_date=d1, close_date=d2)
     assert pytest.approx(funding_fees) == expected_fees
     # Fees for Longs are inverted
     funding_fees = ex._fetch_and_calculate_funding_fees(
-        pair='ADA/USDT', amount=amount, is_short=False, open_date=d1, close_date=d2)
+        pair='ADA/USDT:USDT', amount=amount, is_short=False, open_date=d1, close_date=d2)
     assert pytest.approx(funding_fees) == -expected_fees
 
     # Return empty "refresh_latest"
@@ -4334,7 +4355,7 @@ def test__fetch_and_calculate_funding_fees(
     ex = get_patched_exchange(mocker, default_conf, api_mock, id=exchange)
     with pytest.raises(ExchangeError, match="Could not find funding rates."):
         ex._fetch_and_calculate_funding_fees(
-            pair='ADA/USDT', amount=amount, is_short=False, open_date=d1, close_date=d2)
+            pair='ADA/USDT:USDT', amount=amount, is_short=False, open_date=d1, close_date=d2)
 
 
 @pytest.mark.parametrize('exchange,expected_fees', [
@@ -5403,7 +5424,7 @@ def test_stoploss_contract_size(mocker, default_conf, contract_size, order_amoun
 
     assert api_mock.create_order.call_args_list[0][1]['amount'] == order_amount
     assert order['amount'] == 100
-    assert order['cost'] == 100
+    assert order['cost'] == order_amount
     assert order['filled'] == 100
     assert order['remaining'] == 100
 

@@ -601,6 +601,9 @@ def test_backtest__enter_trade_futures(default_conf_usdt, fee, mocker) -> None:
 
     trade = backtesting._enter_trade(pair, row=row, direction='short')
     assert pytest.approx(trade.liquidation_price) == 0.11787191
+    assert pytest.approx(trade.orders[0].cost) == (
+        trade.stake_amount * trade.leverage + trade.fee_open)
+    assert pytest.approx(trade.orders[-1].stake_amount) == trade.stake_amount
 
     # Stake-amount too high!
     mocker.patch(f"{EXMS}.get_min_pair_stake_amount", return_value=600.0)
@@ -1437,9 +1440,11 @@ def test_backtest_start_multi_strat(default_conf, mocker, caplog, testdatadir):
     strattable_mock = MagicMock()
     strat_summary = MagicMock()
 
-    mocker.patch.multiple('freqtrade.optimize.optimize_reports',
+    mocker.patch.multiple('freqtrade.optimize.optimize_reports.bt_output',
                           text_table_bt_results=text_table_mock,
                           text_table_strategy=strattable_mock,
+                          )
+    mocker.patch.multiple('freqtrade.optimize.optimize_reports.optimize_reports',
                           generate_pair_metrics=MagicMock(),
                           generate_exit_reason_stats=sell_reason_mock,
                           generate_strategy_comparison=strat_summary,

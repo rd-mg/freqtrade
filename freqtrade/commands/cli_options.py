@@ -381,7 +381,7 @@ AVAILABLE_CLI_OPTIONS = {
     ),
     "candle_types": Arg(
         '--candle-types',
-        help='Select candle type to use',
+        help='Select candle type to convert. Defaults to all available types.',
         choices=[c.value for c in CandleType],
         nargs='+',
     ),
@@ -450,14 +450,12 @@ AVAILABLE_CLI_OPTIONS = {
     ),
     "exchange": Arg(
         '--exchange',
-        help=f'Exchange name (default: `{constants.DEFAULT_EXCHANGE}`). '
-        f'Only valid if no config is provided.',
+        help='Exchange name. Only valid if no config is provided.',
     ),
     "timeframes": Arg(
         '-t', '--timeframes',
         help='Specify which tickers to download. Space-separated list. '
         'Default: `1m 5m`.',
-        default=['1m', '5m'],
         nargs='+',
     ),
     "prepend_data": Arg(
@@ -689,5 +687,22 @@ AVAILABLE_CLI_OPTIONS = {
         '--freqai-backtest-live-models',
         help='Run backtest with ready models.',
         action='store_true'
+    ),
+    "minimum_trade_amount": Arg(
+        '--minimum-trade-amount',
+        help='Minimum trade amount for lookahead-analysis',
+        type=check_int_positive,
+        metavar='INT',
+    ),
+    "targeted_trade_amount": Arg(
+        '--targeted-trade-amount',
+        help='Targeted trade amount for lookahead analysis',
+        type=check_int_positive,
+        metavar='INT',
+    ),
+    "lookahead_analysis_exportfilename": Arg(
+        '--lookahead-analysis-exportfilename',
+        help="Use this csv-filename to store lookahead-analysis-results",
+        type=str
     ),
 }
