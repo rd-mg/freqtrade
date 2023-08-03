@@ -520,11 +520,18 @@ class BacktestResponse(BaseModel):
     backtest_result: Optional[Dict[str, Any]]
 
 
+# TODO: This is a copy of BacktestHistoryEntryType
 class BacktestHistoryEntry(BaseModel):
     filename: str
     strategy: str
     run_id: str
     backtest_start_time: int
+    notes: Optional[str] = ''
+
+
+class BacktestMetadataUpdate(BaseModel):
+    strategy: str
+    notes: str = ''
 
 
 class SysInfo(BaseModel):
