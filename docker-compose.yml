@@ -20,14 +20,16 @@ services:
     # build:
     #   context: .
     #   dockerfile: "./docker/Dockerfile.develop"
-    restart: "no"
+    restart: "always"
     container_name: freqtrade
     volumes:
       # - "./user_data:/freqtrade/user_data"
       - "./user_data:/freqtrade/user_data"
+      - "./user_data/models/bot:/freqtrade/user_data/models/bot"
       - "./user_data/conf:/freqtrade/user_data/conf"
       - "./user_data/strategies:/freqtrade/user_data/strategies"
-      - "./optimize/space:/freqtrade/optimize/space"
+      # - "./optimize/space:/freqtrade/optimize/space"
+      # - "./freqai:/frestrade/freqai"
     # Expose api on port 8080 (localhost only)
     # Please read the https://www.freqtrade.io/en/stable/rest-api/ documentation
     # for more information.
@@ -35,11 +37,13 @@ services:
       - "127.0.0.1:8080:8080"
     # Default command used when running `docker compose up`
     command: >
-      trade
+      backtesting
       --config /freqtrade/user_data/conf/config_freqaiRL_spot_telegram.json
-      --freqaimodel MyRLModelv7
+      --logfile /freqtrade/user_data/logs/freqtrade.log
+      --freqaimodel MyRLModelv8
       --strategy-path /freqtrade/user_data/strategies
-      --strategy FreqaiRLStrategyWPv9
+      --strategy FreqaiRLStrategy_buy_hodl_03_cdl
+      --timerange 20240124-20240224
 
 
 
@@ -50,45 +54,42 @@ services:
       # --freqaimodel MyRLModel
       # --strategy-path /freqtrade/user_data/strategies
       # --strategy FreqaiRLStrategyHybrid
-      # --timerange 20221224-20230224
+      # --timerange 20240124-20240224
 
     ######## Backtesting ##########
       # backtesting
-      # --logfile /freqtrade/user_data/logs/freqtrade.log
       # --config /freqtrade/user_data/conf/config_freqaiRL_spot_telegram.json
-      # --freqaimodel MyRLModel
+      # --logfile /freqtrade/user_data/logs/freqtrade.log
+      # --freqaimodel MyRLModelv8
       # --strategy-path /freqtrade/user_data/strategies
-      # --strategy FreqaiRLStrategy
-      # --timerange 20221224-20230224
+      # --strategy FreqaiRLStrategyWPv17
+      # --timerange 20240124-20240224
 
-     ######## Hyper-opt ##########
-#  hyperopt
-#       --config /freqtrade/user_data/conf/config_freqaiRL_spot_telegram.json
-#       --freqaimodel MyRLModelv7
-#       --strategy-path /freqtrade/user_data/strategies
-#       --strategy FreqaiRLStrategyWPv8
-#       --timerange 20230101-20230801
-#       --hyperopt-loss ScalpingTradeHyperOptLoss
-#       --timeframe 1h
-#       -e 2000
-#       --spaces buy sell roi stoploss trailing stoploss roi
-#       --random-state 30
+      # hyperopt
+      # --config /freqtrade/user_data/conf/config_freqaiRL_spot_telegram.json
+      # --freqaimodel MyRLModelv8
+      # --strategy-path /freqtrade/user_data/strategies
+      # --strategy FreqaiRLStrategyWPv16
+      # --timerange 20240124-20240224
+      # --hyperopt-loss ScalpingTradeHyperOptLoss
+      # --timeframe 4h
+      # -e 500
+      # --spaces buy sell stoploss trailing roi
+      # --random-state 30
 
     #######  Freqai  ########
       # trade
+      # --config /freqtrade/user_data/conf/config_freqaiRL_spot_telegram.json
       # --logfile /freqtrade/user_data/logs/freqtrade.log
       # --db-url sqlite:////freqtrade/user_data/tradesv3.sqlite
-      # --config /freqtrade/user_data/strategies/config_freqai_spot_telegram.json
-      # --freqaimodel MyRLModel
+      # --freqaimodel MyRLModelv8
       # --strategy-path /freqtrade/user_data/strategies
-      # --strategy FreqaiRLStrategyHybrid
+      # --strategy FreqaiRLStrategyWPv14
 
 
    ######## Download data ##########
       # download-data
-      # --config /freqtrade/user_data/strategies/config_freqaiRL_spot_telegram.json
+      # --config /freqtrade/user_data/conf/config_freqaiRL_spot_telegram.json
       # --timerange 20200201-
-      # --timeframes 1h 4h
-
+      # --timeframes 1m 5m 15m 30m 1h 2h 4h 12h 1d
       
-  
