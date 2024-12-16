@@ -23,6 +23,7 @@ It also supports the lookahead-analysis of freqai strategies.
 - `--max-open-trades` is forced to be at least equal to the number of pairs.
 - `--dry-run-wallet` is forced to be basically infinite (1 billion).
 - `--stake-amount` is forced to be a static 10000 (10k).
+- `--enable-protections` is forced to be off.
 
 Those are set to avoid users accidentally generating false positives.
 
@@ -40,7 +41,6 @@ usage: freqtrade lookahead-analysis [-h] [-v] [--logfile FILE] [-V] [-c PATH]
                                     [--max-open-trades INT]
                                     [--stake-amount STAKE_AMOUNT]
                                     [--fee FLOAT] [-p PAIRS [PAIRS ...]]
-                                    [--enable-protections]
                                     [--dry-run-wallet DRY_RUN_WALLET]
                                     [--timeframe-detail TIMEFRAME_DETAIL]
                                     [--strategy-list STRATEGY_LIST [STRATEGY_LIST ...]]
@@ -101,3 +101,4 @@ This could lead to a false-negative (the strategy will then be reported as non-b
 - `lookahead-analysis` has access to everything that backtesting has too.
 Please don't provoke any configs like enabling position stacking.
 If you decide to do so, then make doubly sure that you won't ever run out of `max_open_trades` amount and neither leftover money in your wallet.
+- In the results table, the `biased_indicators` column will falsely flag FreqAI target indicators defined in `set_freqai_targets()` as biased. These are not biased and can safely be ignored.

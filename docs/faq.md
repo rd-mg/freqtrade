@@ -2,7 +2,7 @@
 
 ## Supported Markets
 
-Freqtrade supports spot trading, as well as (isolated) futures trading for some selected exchanges. Please refer to the [documentation start page](index.md#supported-futures-exchanges-experimental) for an uptodate list of supported exchanges.
+Freqtrade supports spot trading, as well as (isolated) futures trading for some selected exchanges. Please refer to the [documentation start page](index.md#supported-futures-exchanges-experimental) for an up-to-date list of supported exchanges.
 
 ### Can my bot open short positions?
 
@@ -14,7 +14,7 @@ In spot markets, you can in some cases use leveraged spot tokens, which reflect 
 
 ### Can my bot trade options or futures?
 
-Futures trading is supported for selected exchanges. Please refer to the [documentation start page](index.md#supported-futures-exchanges-experimental) for an uptodate list of supported exchanges.
+Futures trading is supported for selected exchanges. Please refer to the [documentation start page](index.md#supported-futures-exchanges-experimental) for an up-to-date list of supported exchanges.
 
 ## Beginner Tips & Tricks
 
@@ -39,6 +39,10 @@ This could be caused by the following reasons:
   * Run `source .venv/bin/activate` to activate the virtual environment.
 * The installation did not complete successfully.
   * Please check the [Installation documentation](installation.md).
+
+### The bot starts, but in STOPPED mode
+
+Make sure you set the `initial_state` config option to `"running"` in your config.json
 
 ### I have waited 5 minutes, why hasn't the bot made any trades yet?
 
@@ -100,6 +104,19 @@ You can use the `/stopentry` command in Telegram to prevent future trade entry, 
 
 Please look at the [advanced setup documentation Page](advanced-setup.md#running-multiple-instances-of-freqtrade).
 
+### I'm getting "Impossible to load Strategy" when starting the bot
+
+This error message is shown when the bot cannot load the strategy.
+Usually, you can use `freqtrade list-strategies` to list all available strategies. 
+The output of this command will also include a status column, showing if the strategy can be loaded.
+
+Please check the following:
+
+* Are you using the correct strategy name? The strategy name is case-sensitive and must correspond to the Strategy class name (not the filename!).
+* Is the strategy in the `user_data/strategies` directory, and has the file-ending `.py`?
+* Does the bot show other warnings before this error? Maybe you're missing some dependencies for the strategy - which would be highlighted in the log.
+* In case of docker - is the strategy directory mounted correctly (check the volumes part of the docker-compose file)?
+
 ### I'm getting "Missing data fillup" messages in the log
 
 This message is just a warning that the latest candles had missing candles in them.
@@ -128,15 +145,9 @@ This warning can point to one of the below problems:
 * Barely traded pair -> Check the pair on the exchange webpage, look at the timeframe your strategy uses. If the pair does not have any volume in some candles (usually visualized with a "volume 0" bar, and a "_" as candle), this pair did not have any trades in this timeframe. These pairs should ideally be avoided, as they can cause problems with order-filling.
 * API problem -> API returns wrong data (this only here for completeness, and should not happen with supported exchanges).
 
-### I'm getting the "RESTRICTED_MARKET" message in the log
-
-Currently known to happen for US Bittrex users.
-
-Read [the Bittrex section about restricted markets](exchanges.md#restricted-markets) for more information.
-
 ### I'm getting the "Exchange XXX does not support market orders." message and cannot run my strategy
 
-As the message says, your exchange does not support market orders and you have one of the [order types](configuration.md/#understand-order_types) set to "market". Your strategy was probably written with other exchanges in mind and sets "market" orders for "stoploss" orders, which is correct and preferable for most of the exchanges supporting market orders (but not for Bittrex and Gate.io).
+As the message says, your exchange does not support market orders and you have one of the [order types](configuration.md/#understand-order_types) set to "market". Your strategy was probably written with other exchanges in mind and sets "market" orders for "stoploss" orders, which is correct and preferable for most of the exchanges supporting market orders (but not for Gate.io).
 
 To fix this, redefine order types in the strategy to use "limit" instead of "market":
 
@@ -152,9 +163,9 @@ The same fix should be applied in the configuration file, if order types are def
 
 ### I'm trying to start the bot live, but get an API permission error
 
-Errors like `Invalid API-key, IP, or permissions for action` mean exactly what they actually say.
-Your API key is either invalid (copy/paste error? check for leading/trailing spaces in the config), expired, or the IP you're running the bot from is not enabled in the Exchange's API console.
-Usually, the permission "Spot Trading" (or the equivalent in the exchange you use) will be necessary.
+Errors like `Invalid API-key, IP, or permissions for action` mean exactly what they actually say.  
+Your API key is either invalid (copy/paste error? check for leading/trailing spaces in the config), expired, or the IP you're running the bot from is not enabled in the Exchange's API console.  
+Usually, the permission "Spot Trading" (or the equivalent in the exchange you use) will be necessary.  
 Futures will usually have to be enabled specifically.
 
 ### How do I search the bot logs for something?
